@@ -29,10 +29,20 @@ namespace EfCoreRelations.Api.Controllers
         [Route("TableQueries")]
         public async Task<ActionResult> GetDataQueryAsync([FromQuery][Required] string query)
         {
-            using (var connection = new Npgsql.NpgsqlConnection(Configuration.GetConnectionString("Dev_BasketballDB")))
+            try
             {
-                return Ok(await connection.QueryAsync<IEnumerable<object>>(query));
+                using (var connection = new Npgsql.NpgsqlConnection(Configuration.GetConnectionString("Dev_BasketballDB")))
+                {
+                    return Ok(await connection.QueryAsync<IEnumerable<object>>(query));
+                }
             }
+            catch (System.Exception ex)
+            {
+
+                return BadRequest(ex.ToString() + ex.StackTrace.ToString());
+
+            }
+
         }
 
 
@@ -40,11 +50,19 @@ namespace EfCoreRelations.Api.Controllers
         [Route("TableReadData")]
         public async Task<ActionResult> GetDataAsync([FromQuery][Required] string query)
         {
-            using (var connection = new Npgsql.NpgsqlConnection(Configuration.GetConnectionString("Dev_BasketballDB")))
+            try
             {
-                var tables = (from row in await connection.QueryAsync(query) select (IDictionary<string, object>)row).AsList();
-                return new JsonResult(tables);
+                using (var connection = new Npgsql.NpgsqlConnection(Configuration.GetConnectionString("Dev_BasketballDB")))
+                {
+                    var tables = (from row in await connection.QueryAsync(query) select (IDictionary<string, object>)row).AsList();
+                    return new JsonResult(tables);
+                }
             }
+            catch (System.Exception ex)
+            {
+                return BadRequest(ex.ToString() + ex.StackTrace.ToString());
+            }
+
         }
     }
 }
