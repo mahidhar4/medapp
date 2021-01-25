@@ -31,7 +31,7 @@ namespace EfCoreRelations.Api.Controllers
         {
             using (var connection = new Npgsql.NpgsqlConnection(Configuration.GetConnectionString("Dev_BasketballDB")))
             {
-                return Ok(await connection.QueryAsync<object>(query));
+                return Ok(await connection.QueryAsync<IEnumerable<object>>(query));
             }
         }
     }
