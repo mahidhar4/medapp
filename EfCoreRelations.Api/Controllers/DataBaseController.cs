@@ -30,6 +30,9 @@ namespace EfCoreRelations.Api.Controllers
 
         private string GetConnectionString(bool isUrl = false)
         {
+            if (!isUrl)
+                isUrl = hostingEnvironment.EnvironmentName == "Production";
+
             if (isUrl)
             {
                 //postgres://username:password@host:port/database
