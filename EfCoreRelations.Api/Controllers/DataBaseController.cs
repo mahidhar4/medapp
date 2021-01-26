@@ -42,7 +42,7 @@ namespace EfCoreRelations.Api.Controllers
 
                 if (hostingEnvironment.EnvironmentName == "Production")
                 {
-                    connectionStr = connectionStr + "sslmode=Prefer;Trust Server Certificate=true";
+                    connectionStr = connectionStr + ";sslmode=Prefer;Trust Server Certificate=true";
                 }
 
                 return connectionStr;
