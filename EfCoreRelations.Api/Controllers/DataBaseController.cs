@@ -35,6 +35,9 @@ namespace EfCoreRelations.Api.Controllers
                 //postgres://username:password@host:port/database
                 string url = Configuration.GetConnectionString("DATABASE_URL");
 
+                if (string.IsNullOrWhiteSpace(url))
+                    url = Configuration.GetValue<string>("DATABASE_URL");
+
                 string connectionStr = $"Host={url.Split("@")[1].Split(":")[0]};Database={url.Split("@")[1].Split("/")[1]};Username={url.Split("://")[1].Split(":")[0]};Password={url.Split("://")[1].Split(":")[1].Split("@")[0]};Port={url.Split("@")[1].Split(":")[1].Split("/")[0]}";
 
                 if (hostingEnvironment.EnvironmentName == "Production")
