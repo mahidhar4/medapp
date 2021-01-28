@@ -86,24 +86,49 @@ namespace EfCoreRelations.Api.Controllers
             {
                 using (var connection = new Npgsql.NpgsqlConnection(GetConnectionString()))
                 {
-                    var dataset = await connection.QueryAsync(query);
-                    var tables = (from row in dataset select (IDictionary<string, object>)row).AsList();
-                    var tablesData = (from row in dataset select (List<object>)row).AsList();
+                    // var dataset = await connection.QueryAsync(query);
+                    var dataset2 = await connection.ExecuteReaderAsync(query);
+                    string[] keys = { };
+                    List<object[]> data = new List<object[]>();
 
 
-                    response = tables;
-                    if (tables != null && tables.Count > 0)
+                    while (await dataset2.ReadAsync())
                     {
-                        // var dataJson = JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(tables[0]));
+                        object[] objects = { };
 
-                        var keys = tables[0].Keys; //dataJson.Properties().Select(p => p.Name).ToList();
-
-                        response = new {
-                            keys,   
-                            data = tablesData
-                        };
-
+                        for (int i = 0; i < dataset2.VisibleFieldCount; i++)
+                        {
+                            var column = dataset2.GetName(0);
+                            keys[i] = column;
+                            objects[i] = dataset2.GetValue(i);
+                        }
+                        data.Add(objects);
                     }
+
+                    response = new
+                    {
+                        keys,
+                        data
+                    };
+
+                    // var tables = (from row in dataset select (IDictionary<string, object>)row).AsList();
+                    // var tablesData = (from row in dataset select (DapperRow)row).AsList();
+
+
+                    // response = tables;
+                    // if (tables != null && tables.Count > 0)
+                    // {
+                    //     // var dataJson = JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(tables[0]));
+
+                    //     var keys = tables[0].Keys; //dataJson.Properties().Select(p => p.Name).ToList();
+
+                    //     response = new
+                    //     {
+                    //         keys,
+                    //         // data = tablesData
+                    //     };
+
+                    // }
 
                     return new JsonResult(response);
                 }
