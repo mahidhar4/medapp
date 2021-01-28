@@ -88,21 +88,21 @@ namespace EfCoreRelations.Api.Controllers
                 {
                     // var dataset = await connection.QueryAsync(query);
                     var dataset2 = await connection.ExecuteReaderAsync(query);
-                    string[] keys = { };
+                    List<string> keys = new List<string>();
                     List<object[]> data = new List<object[]>();
 
 
                     while (await dataset2.ReadAsync())
                     {
-                        object[] objects = { };
+                        List<object> objects = new List<object>();
 
                         for (int i = 0; i < dataset2.VisibleFieldCount; i++)
                         {
                             var column = dataset2.GetName(0);
-                            keys[i] = column;
-                            objects[i] = dataset2.GetValue(i);
+                            if (!keys.Contains(column)) keys.Add(column);
+                            objects.Add(dataset2.GetValue(i));
                         }
-                        data.Add(objects);
+                        data.Add(objects.ToArray());
                     }
 
                     response = new
