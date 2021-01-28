@@ -79,7 +79,72 @@ namespace EfCoreRelations.Api.Controllers
 
         [HttpGet]
         [Route("TableReadData")]
-        public async Task<ActionResult> GetDataAsync([FromQuery][Required] string query)
+        public async Task<ActionResult> GetTableReadDataAsync([FromQuery][Required] string query)
+        {
+            try
+            {
+                using (var connection = new Npgsql.NpgsqlConnection(GetConnectionString()))
+                {
+                    var dataset = await connection.QueryAsync(query);
+
+                    var tables = (from row in dataset select (IDictionary<string, object>)row).AsList();
+
+                    return new JsonResult(tables);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(ex.ToString() + ex.StackTrace.ToString());
+            }
+
+        }
+
+
+        [HttpGet]
+        [Route("TableReadDataEvenLess")]
+        public async Task<ActionResult> TableReadDataEvenLessAsync([FromQuery][Required] string query)
+        {
+            dynamic response = null;
+            try
+            {
+                using (var connection = new Npgsql.NpgsqlConnection(GetConnectionString()))
+                {
+                    var dataset = await connection.QueryAsync(query);
+
+                    var tables = (from row in dataset select (IDictionary<string, object>)row).AsList();
+
+                    response = tables;
+                    if (tables != null && tables.Count > 0)
+                    {
+                        // var dataJson = JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(tables[0]));
+                        var data = (from row in tables select row.Values).AsList();
+
+                        var keys = tables[0].Keys; //dataJson.Properties().Select(p => p.Name).ToList();
+
+                        response = new
+                        {
+                            keys,
+                            data
+                        };
+
+                    }
+
+                    return new JsonResult(response);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(ex.ToString() + ex.StackTrace.ToString());
+            }
+
+        }
+
+
+
+
+        [HttpGet]
+        [Route("TableReadDataLess")]
+        public async Task<ActionResult> GetTableReadDataLessAsync([FromQuery][Required] string query)
         {
             dynamic response = null;
             try
@@ -98,7 +163,7 @@ namespace EfCoreRelations.Api.Controllers
 
                         for (int i = 0; i < dataset2.VisibleFieldCount; i++)
                         {
-                            var column = dataset2.GetName(0);
+                            var column = dataset2.GetName(i);
                             if (!keys.Contains(column)) keys.Add(column);
                             objects.Add(dataset2.GetValue(i));
                         }
