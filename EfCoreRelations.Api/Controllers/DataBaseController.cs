@@ -9,6 +9,8 @@ using Npgsql;
 using Dapper;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Hosting;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace EfCoreRelations.Api.Controllers
 {
@@ -79,12 +81,31 @@ namespace EfCoreRelations.Api.Controllers
         [Route("TableReadData")]
         public async Task<ActionResult> GetDataAsync([FromQuery][Required] string query)
         {
+            dynamic response = null;
             try
             {
                 using (var connection = new Npgsql.NpgsqlConnection(GetConnectionString()))
                 {
-                    var tables = (from row in await connection.QueryAsync(query) select (IDictionary<string, object>)row).AsList();
-                    return new JsonResult(tables);
+                    var dataset = await connection.QueryAsync(query);
+                    var tables = (from row in dataset select (IDictionary<string, object>)row).AsList();
+                    var tablesData = (from row in dataset select (List<object>)row).AsList();
+
+
+                    response = tables;
+                    if (tables != null && tables.Count > 0)
+                    {
+                        // var dataJson = JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(tables[0]));
+
+                        var keys = tables[0].Keys; //dataJson.Properties().Select(p => p.Name).ToList();
+
+                        response = new {
+                            keys,   
+                            data = tablesData
+                        };
+
+                    }
+
+                    return new JsonResult(response);
                 }
             }
             catch (System.Exception ex)
